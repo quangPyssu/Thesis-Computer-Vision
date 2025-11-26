@@ -1,0 +1,31 @@
+# Complete Pipeline Configuration
+
+# Detection (YOLOv8)
+detection:
+  model_path: detection/runs/detect/logodet3k_yolov8s_baseline50/weights/best.pt
+  conf_threshold: 0.25
+  iou_threshold: 0.45
+  
+# Recognition (ResNet50)
+recognition:
+  model_path: recognition/weights/model_for_inference.pth
+  top_k: 5  # Number of top brand predictions to return
+  
+# Pipeline
+pipeline:
+  device: cuda  # or 'cpu'
+  batch_process: false
+  
+# Output
+output:
+  save_dir: outputs/pipeline_results
+  save_visualizations: true
+  save_json: true
+  visualization_dpi: 150
+  
+# Visualization
+visualization:
+  bbox_linewidth: 3
+  font_size: 12
+  show_confidence: true
+  show_top_n: 1  # Show top-N predictions on image

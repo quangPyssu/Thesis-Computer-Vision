@@ -1,0 +1,425 @@
+[
+  {
+    "image": "val_001154.jpg",
+    "detections": [
+      {
+        "detection_id": 1,
+        "bbox": [
+          2,
+          6,
+          79,
+          52
+        ],
+        "detection_conf": 0.50376957654953,
+        "predictions": [
+          {
+            "brand": "Unknown_1696",
+            "confidence": 0.8970004320144653,
+            "class_id": 1696
+          },
+          {
+            "brand": "Unknown_1384",
+            "confidence": 0.0030138990841805935,
+            "class_id": 1384
+          },
+          {
+            "brand": "Unknown_747",
+            "confidence": 0.0009094041306525469,
+            "class_id": 747
+          },
+          {
+            "brand": "Unknown_1104",
+            "confidence": 0.0008341326611116529,
+            "class_id": 1104
+          },
+          {
+            "brand": "Unknown_211",
+            "confidence": 0.0008171897497959435,
+            "class_id": 211
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "image": "val_002184.jpg",
+    "detections": [
+      {
+        "detection_id": 1,
+        "bbox": [
+          19,
+          5,
+          365,
+          74
+        ],
+        "detection_conf": 0.9168983697891235,
+        "predictions": [
+          {
+            "brand": "Unknown_2864",
+            "confidence": 0.9809984564781189,
+            "class_id": 2864
+          },
+          {
+            "brand": "Unknown_416",
+            "confidence": 0.00030230943229980767,
+            "class_id": 416
+          },
+          {
+            "brand": "Unknown_431",
+            "confidence": 0.000193992760614492,
+            "class_id": 431
+          },
+          {
+            "brand": "Unknown_400",
+            "confidence": 0.00016128089919220656,
+            "class_id": 400
+          },
+          {
+            "brand": "Unknown_798",
+            "confidence": 0.00014404994726646692,
+            "class_id": 798
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "image": "val_002187.jpg",
+    "detections": [
+      {
+        "detection_id": 1,
+        "bbox": [
+          25,
+          0,
+          438,
+          83
+        ],
+        "detection_conf": 0.9760085344314575,
+        "predictions": [
+          {
+            "brand": "Unknown_2864",
+            "confidence": 0.9221810698509216,
+            "class_id": 2864
+          },
+          {
+            "brand": "Unknown_416",
+            "confidence": 0.0015942530008032918,
+            "class_id": 416
+          },
+          {
+            "brand": "Unknown_2043",
+            "confidence": 0.0011364377569407225,
+            "class_id": 2043
+          },
+          {
+            "brand": "Unknown_2837",
+            "confidence": 0.0010873374994844198,
+            "class_id": 2837
+          },
+          {
+            "brand": "Unknown_431",
+            "confidence": 0.0008811827283352613,
+            "class_id": 431
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "image": "val_002192.jpg",
+    "detections": [
+      {
+        "detection_id": 1,
+        "bbox": [
+          4,
+          0,
+          48,
+          19
+        ],
+        "detection_conf": 0.825580358505249,
+        "predictions": [
+          {
+            "brand": "Unknown_2870",
+            "confidence": 0.3427829146385193,
+            "class_id": 2870
+          },
+          {
+            "brand": "Unknown_1609",
+            "confidence": 0.1405600905418396,
+            "class_id": 1609
+          },
+          {
+            "brand": "Unknown_792",
+            "confidence": 0.04184381663799286,
+            "class_id": 792
+          },
+          {
+            "brand": "Unknown_1118",
+            "confidence": 0.022458085790276527,
+            "class_id": 1118
+          },
+          {
+            "brand": "Unknown_868",
+            "confidence": 0.015064707957208157,
+            "class_id": 868
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "image": "val_002193.jpg",
+    "detections": [
+      {
+        "detection_id": 1,
+        "bbox": [
+          5,
+          1,
+          49,
+          20
+        ],
+        "detection_conf": 0.8107291460037231,
+        "predictions": [
+          {
+            "brand": "Unknown_2870",
+            "confidence": 0.3658252954483032,
+            "class_id": 2870
+          },
+          {
+            "brand": "Unknown_1609",
+            "confidence": 0.17428556084632874,
+            "class_id": 1609
+          },
+          {
+            "brand": "Unknown_792",
+            "confidence": 0.02636915259063244,
+            "class_id": 792
+          },
+          {
+            "brand": "Unknown_1118",
+            "confidence": 0.01668705604970455,
+            "class_id": 1118
+          },
+          {
+            "brand": "Unknown_868",
+            "confidence": 0.014593126252293587,
+            "class_id": 868
+          }
+        ]
+      },
+      {
+        "detection_id": 2,
+        "bbox": [
+          3,
+          3,
+          52,
+          23
+        ],
+        "detection_conf": 0.32686665654182434,
+        "predictions": [
+          {
+            "brand": "Unknown_2870",
+            "confidence": 0.4040379822254181,
+            "class_id": 2870
+          },
+          {
+            "brand": "Unknown_1609",
+            "confidence": 0.07375781983137131,
+            "class_id": 1609
+          },
+          {
+            "brand": "Unknown_868",
+            "confidence": 0.01814248599112034,
+            "class_id": 868
+          },
+          {
+            "brand": "Unknown_1118",
+            "confidence": 0.011159622110426426,
+            "class_id": 1118
+          },
+          {
+            "brand": "Unknown_792",
+            "confidence": 0.009331436827778816,
+            "class_id": 792
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "image": "val_002249.jpg",
+    "detections": [
+      {
+        "detection_id": 1,
+        "bbox": [
+          223,
+          243,
+          354,
+          304
+        ],
+        "detection_conf": 0.7655909657478333,
+        "predictions": [
+          {
+            "brand": "Unknown_2919",
+            "confidence": 0.9552002549171448,
+            "class_id": 2919
+          },
+          {
+            "brand": "Unknown_2334",
+            "confidence": 0.00049378297990188,
+            "class_id": 2334
+          },
+          {
+            "brand": "Unknown_2912",
+            "confidence": 0.00032304669730365276,
+            "class_id": 2912
+          },
+          {
+            "brand": "Unknown_420",
+            "confidence": 0.00015529333904851228,
+            "class_id": 420
+          },
+          {
+            "brand": "Unknown_239",
+            "confidence": 0.00014202218153513968,
+            "class_id": 239
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "image": "val_002291.jpg",
+    "detections": []
+  },
+  {
+    "image": "val_004105.jpg",
+    "detections": [
+      {
+        "detection_id": 1,
+        "bbox": [
+          5,
+          4,
+          341,
+          86
+        ],
+        "detection_conf": 0.396870493888855,
+        "predictions": [
+          {
+            "brand": "Unknown_311",
+            "confidence": 0.8231455683708191,
+            "class_id": 311
+          },
+          {
+            "brand": "Unknown_66",
+            "confidence": 0.007354917470365763,
+            "class_id": 66
+          },
+          {
+            "brand": "Unknown_1412",
+            "confidence": 0.006636330857872963,
+            "class_id": 1412
+          },
+          {
+            "brand": "Unknown_2163",
+            "confidence": 0.004738061223179102,
+            "class_id": 2163
+          },
+          {
+            "brand": "Unknown_394",
+            "confidence": 0.004682057071477175,
+            "class_id": 394
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "image": "val_004134.jpg",
+    "detections": []
+  },
+  {
+    "image": "val_004399.jpg",
+    "detections": [
+      {
+        "detection_id": 1,
+        "bbox": [
+          232,
+          200,
+          430,
+          355
+        ],
+        "detection_conf": 0.5377104878425598,
+        "predictions": [
+          {
+            "brand": "Unknown_1628",
+            "confidence": 0.8163758516311646,
+            "class_id": 1628
+          },
+          {
+            "brand": "Unknown_1804",
+            "confidence": 0.013581703417003155,
+            "class_id": 1804
+          },
+          {
+            "brand": "Unknown_1992",
+            "confidence": 0.0035778088495135307,
+            "class_id": 1992
+          },
+          {
+            "brand": "Unknown_1836",
+            "confidence": 0.00218500685878098,
+            "class_id": 1836
+          },
+          {
+            "brand": "Unknown_551",
+            "confidence": 0.001625711447559297,
+            "class_id": 551
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "image": "val_004578.jpg",
+    "detections": [
+      {
+        "detection_id": 1,
+        "bbox": [
+          142,
+          92,
+          326,
+          308
+        ],
+        "detection_conf": 0.3652269244194031,
+        "predictions": [
+          {
+            "brand": "Unknown_1330",
+            "confidence": 0.35639455914497375,
+            "class_id": 1330
+          },
+          {
+            "brand": "Unknown_1853",
+            "confidence": 0.05334329605102539,
+            "class_id": 1853
+          },
+          {
+            "brand": "Unknown_1852",
+            "confidence": 0.03692453354597092,
+            "class_id": 1852
+          },
+          {
+            "brand": "Unknown_982",
+            "confidence": 0.005685211159288883,
+            "class_id": 982
+          },
+          {
+            "brand": "Unknown_831",
+            "confidence": 0.005288455635309219,
+            "class_id": 831
+          }
+        ]
+      }
+    ]
+  }
+]

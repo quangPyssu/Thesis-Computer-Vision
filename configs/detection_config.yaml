@@ -1,0 +1,46 @@
+# YOLOv8 Detection Configuration
+
+# Model
+model:
+  architecture: yolov8n  # yolov8n, yolov8s, yolov8m, yolov8l, yolov8x
+  pretrained_weights: detection/yolov8n.pt
+  
+# Training
+training:
+  data_yaml: data/logodet3k_yolo/data.yaml
+  epochs: 50
+  batch_size: 32
+  image_size: 640
+  device: 0  # GPU device ID, or 'cpu'
+  workers: 2  # Data loading workers (use 0 for Windows if issues)
+  patience: 0  # Early stopping patience
+  
+  # Optimizer
+  optimizer: AdamW
+  lr0: 0.001
+  lrf: 0.01
+  
+  # Augmentation
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  degrees: 0.0
+  translate: 0.1
+  scale: 0.5
+  shear: 0.0
+  perspective: 0.0
+  flipud: 0.0
+  fliplr: 0.5
+  mosaic: 1.0
+  mixup: 0.0
+
+# Inference
+inference:
+  conf_threshold: 0.25  # Confidence threshold
+  iou_threshold: 0.45   # NMS IoU threshold
+  max_det: 300          # Maximum detections per image
+  
+# Paths
+paths:
+  save_dir: detection/runs/detect
+  weights_dir: detection/runs/detect/*/weights

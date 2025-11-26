@@ -1,0 +1,61 @@
+# ResNet50 Recognition Configuration
+
+# Model
+model:
+  architecture: resnet50
+  num_classes: 3000  # LogoDet-3K classes (will be determined from data)
+  embedding_size: 512
+  pretrained: true
+  dropout: 0.3
+  
+# Training
+training:
+  batch_size: 64
+  epochs: 50
+  image_size: 224
+  device: cuda
+  workers: 0  # Use 0 for Windows
+  
+  # Loss
+  loss_type: arcface  # or 'crossentropy'
+  arcface_s: 64.0
+  arcface_m: 0.5
+  label_smoothing: 0.1
+  
+  # Optimizer
+  optimizer: AdamW
+  lr: 0.0001
+  weight_decay: 0.0001
+  
+  # Scheduler
+  scheduler: cosine
+  warmup_epochs: 5
+  
+  # Early stopping
+  patience: 10
+  
+  # Data augmentation
+  augmentation:
+    random_crop: true
+    random_flip: true
+    color_jitter: true
+    random_rotation: 15
+
+# Data
+data:
+  dataset: LogoDet-3K
+  format: COCO
+  train_annotations: data/LogoDet-3K/train/LogoDet-3K-train.json
+  val_annotations: data/LogoDet-3K/val/LogoDet-3K-val.json
+  test_annotations: data/LogoDet-3K/test/LogoDet-3K-test.json
+  max_samples_per_class: 500
+  
+# Inference
+inference:
+  top_k: 5  # Return top-k predictions
+  
+# Paths
+paths:
+  save_dir: recognition/outputs
+  weights_dir: recognition/weights
+  checkpoint_file: model_for_inference.pth
