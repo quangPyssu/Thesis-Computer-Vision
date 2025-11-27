@@ -43,7 +43,8 @@ class LogoDetectionRecognitionPipeline:
         self,
         yolo_model_path='detection/runs/detect/logodet3k_yolov8s_baseline50/weights/best.pt',
         resnet_model_path='recognition/weights/model_for_inference.pth',
-        device='cuda'
+        device='cuda',
+        brand_mapping_path='LogoDet-3K/annotations.json'
     ):
         """
         Initialize the pipeline with trained models.
@@ -152,7 +153,7 @@ class LogoDetectionRecognitionPipeline:
                 
                 predictions = []
                 for prob, idx in zip(top_probs.cpu().numpy(), top_indices.cpu().numpy()):
-                    brand_name = self.idx_to_brand.get(str(int(idx)), f"Unknown_{idx}")
+                    brand_name = self.get_brand_name(idx)
                     predictions.append({
                         'brand': brand_name,
                         'confidence': float(prob),
@@ -167,6 +168,24 @@ class LogoDetectionRecognitionPipeline:
                 })
         
         return results, image_rgb
+    
+    def get_brand_name(self, class_idx):
+        """
+        Args:
+            class_idx: Class index (int or tensor)
+        
+        Returns:
+            str: Brand name
+        """
+        idx = int(class_idx)
+        
+        # Try both int and str keys
+        if idx in self.idx_to_brand:
+            return self.idx_to_brand[idx]
+        elif str(idx) in self.idx_to_brand:
+            return self.idx_to_brand[str(idx)]
+        else:
+            return f"Unknown_{idx}"
     
     def visualize_results(self, image_rgb, results, save_path=None, show=True):
         """

@@ -1,1 +1,4 @@
 logodet3k_yolo
+activate_yolo.ps1
+__pycache__/
+/LogoDet-3K
