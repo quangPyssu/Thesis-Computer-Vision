@@ -1,0 +1,17 @@
+{
+  "timestamp": "20251128_011050",
+  "evaluation_metrics": {
+    "top1_accuracy": 81.26875267895414,
+    "top5_accuracy": 90.22717531075868,
+    "top10_accuracy": 90.22717531075868,
+    "f1_macro": 0.685372384397072,
+    "f1_weighted": 0.8030059719212791,
+    "precision_macro": 0.6892407740298192,
+    "recall_macro": 0.7031764990499261
+  },
+  "dataset_info": {
+    "total_predictions": 2333,
+    "num_classes": 3000,
+    "num_test_images": 5000
+  }
+}
