@@ -1,0 +1,79 @@
+# YOLOv8 Small-Logo-Aware Detection Configuration
+# Contribution #1: Enhanced training for small logo detection
+
+# Model
+model:
+  architecture: yolov8n  # YOLOv8-nano (same as baseline)
+  pretrained_weights: detection/yolov8n.pt  # Or use baseline best.pt for fine-tuning
+  
+# Training - Small Logo Optimization
+training:
+  data_yaml: data/logodet3k_yolo/data.yaml
+  epochs: 40  # Match baseline
+  batch_size: 16  # Reduced from 32 due to larger image size (960)
+  image_size: 960  # INCREASED from 640 for better small logo resolution
+  device: 0  # GPU device ID, or 'cpu'
+  workers: 2  # Data loading workers
+  patience: 0  # Early stopping patience (0 = disabled)
+  
+  # Optimizer (same as baseline)
+  optimizer: AdamW
+  lr0: 0.001
+  lrf: 0.01
+  
+  # Enhanced Augmentation for Small Logos
+  augmentation:
+    # Mosaic: Mix 4 images to create diverse scenes
+    mosaic: 1.0  # Enabled (100% probability)
+    
+    # Copy-Paste: KEY CONTRIBUTION - synthesize more small logo instances
+    copy_paste: 0.3  # NEW: 30% probability to paste logo instances
+    
+    # Scale jitter: STRENGTHENED for varying logo sizes
+    scale: 0.7  # Increased from 0.5 (baseline) - allows [0.3x to 1.7x] scaling
+    
+    # Translation: STRENGTHENED for more spatial variation
+    translate: 0.2  # Increased from 0.1 (baseline) - ±20% image shift
+    
+    # Rotation: ADDED small angles (logos need to stay readable)
+    degrees: 10.0  # NEW: ±10° rotation (baseline was 0.0)
+    
+    # Color augmentation (HSV)
+    hsv_h: 0.02  # Hue: slightly increased from 0.015
+    hsv_s: 0.7   # Saturation: same as baseline
+    hsv_v: 0.4   # Value/brightness: same as baseline
+    
+    # Geometric transforms (minimal to preserve logo shape)
+    perspective: 0.0  # No perspective distortion
+    shear: 0.0        # No shearing
+    
+    # Flipping
+    flipud: 0.0  # No vertical flip (logos have orientation)
+    fliplr: 0.5  # 50% horizontal flip (many logos are symmetric)
+    
+    # Mixup: disabled (mosaic + copy-paste is sufficient)
+    mixup: 0.0
+
+# Inference (same as baseline)
+inference:
+  conf_threshold: 0.25  # Confidence threshold
+  iou_threshold: 0.45   # NMS IoU threshold
+  max_det: 300          # Maximum detections per image
+  
+# Paths
+# Paths
+paths:
+  save_dir: detection/runs/detect
+  run_name: logodet3k_yolov8n_smalllogo_contrib1
+  weights_dir: detection/runs/detect/*/weights
+
+# Summary of Changes from Baseline
+# ================================
+# Model: YOLOv8n (same as baseline)
+# Epochs: 40 (same as baseline)
+# Resolution: 640 → 960 (50% increase)
+# Copy-Paste: 0.0 → 0.3 (NEW augmentation)
+# Scale: 0.5 → 0.7 (40% stronger)
+# Translate: 0.1 → 0.2 (100% stronger)
+# Degrees: 0.0 → 10.0 (NEW rotation)
+# Batch: 32 → 16 (due to memory constraints with larger images)

@@ -1,4 +1,4 @@
-# YOLOv8 Detection Configuration
+# YOLOv8 Detection Configuration - BASELINE
 
 # Model
 model:
@@ -8,7 +8,7 @@ model:
 # Training
 training:
   data_yaml: data/logodet3k_yolo/data.yaml
-  epochs: 50
+  epochs: 40  # Baseline uses 40 epochs
   batch_size: 32
   image_size: 640
   device: 0  # GPU device ID, or 'cpu'
