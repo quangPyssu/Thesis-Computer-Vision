@@ -15,13 +15,17 @@ from ultralytics import YOLO
 if __name__ == '__main__':
     # Load pretrained model - you can choose:
     # Option 1: Start from COCO pretrained (same as baseline)
-    model = YOLO('yolov8n.pt')
+    # model = YOLO('yolov8n.pt')
     
     # Option 2: Fine-tune from your baseline (uncomment below)
     # model = YOLO('runs/detect/logodet3k_yolov8s_baseline50/weights/best.pt')
+    
+    # Option 3: RESUME from interrupted training
+    model = YOLO('runs/detect/logodet3k_yolov8n_smalllogo_contrib13/weights/last.pt')
 
     results = model.train(
         data='../data/logodet3k_yolo/data.yaml',
+        resume=True,  # Resume training from checkpoint
         
         # Training duration - match baseline
         epochs=40,
