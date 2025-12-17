@@ -1,0 +1,6 @@
+Results:
+  mAP@0.5: 0.7424
+  mAP@0.5:0.95: 0.5442
+  Precision: 1.0000
+  Recall: 0.7778
+  Total time: 118.70s

@@ -276,12 +276,12 @@ def main():
     
     parser = argparse.ArgumentParser(description='Tiled inference for YOLO')
     parser.add_argument('--model', type=str, required=True, help='Path to model weights')
-    parser.add_argument('--image', type=str, required=True, help='Path to input image')
+    parser.add_argument('--image', type=str, required=True, help='Path to input image or directory')
     parser.add_argument('--tile-size', type=int, default=1024, help='Tile size')
     parser.add_argument('--overlap', type=float, default=0.2, help='Overlap ratio (0-1)')
     parser.add_argument('--conf', type=float, default=0.25, help='Confidence threshold')
     parser.add_argument('--iou', type=float, default=0.45, help='NMS IoU threshold')
-    parser.add_argument('--output', type=str, help='Output visualization path')
+    parser.add_argument('--output', type=str, help='Output visualization path (for single image) or directory (for multiple images)')
     parser.add_argument('--verbose', action='store_true', help='Verbose output')
     
     args = parser.parse_args()
@@ -295,16 +295,60 @@ def main():
         iou_threshold=args.iou
     )
     
-    result = tiler.predict_tiled(args.image, verbose=True)
+    # Check if input is a file or directory
+    input_path = Path(args.image)
     
-    print(f"\nResults:")
-    print(f"  Tiles created: {result['n_tiles']}")
-    print(f"  Detections before NMS: {result['n_detections_before_nms']}")
-    print(f"  Final detections: {result['n_detections_after_nms']}")
+    if input_path.is_file():
+        # Single image
+        result = tiler.predict_tiled(str(input_path), verbose=True)
+        
+        print(f"\nResults:")
+        print(f"  Tiles created: {result['n_tiles']}")
+        print(f"  Detections before NMS: {result['n_detections_before_nms']}")
+        print(f"  Final detections: {result['n_detections_after_nms']}")
+        
+        # Visualize if output path provided
+        if args.output:
+            tiler.visualize_detection(str(input_path), result['detections'], args.output)
     
-    # Visualize if output path provided
-    if args.output:
-        tiler.visualize_detection(args.image, result['detections'], args.output)
+    elif input_path.is_dir():
+        # Multiple images
+        image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif'}
+        image_files = [f for f in input_path.iterdir() if f.suffix.lower() in image_extensions]
+        
+        if not image_files:
+            print(f"No images found in directory: {input_path}")
+            return
+        
+        print(f"Processing {len(image_files)} images from {input_path}")
+        
+        # Create output directory if specified
+        output_dir = None
+        if args.output:
+            output_dir = Path(args.output)
+            output_dir.mkdir(parents=True, exist_ok=True)
+        
+        total_detections = 0
+        for i, image_file in enumerate(image_files, 1):
+            print(f"\n[{i}/{len(image_files)}] Processing {image_file.name}")
+            result = tiler.predict_tiled(str(image_file), verbose=args.verbose)
+            
+            print(f"  Tiles: {result['n_tiles']}, Detections: {result['n_detections_after_nms']}")
+            total_detections += result['n_detections_after_nms']
+            
+            # Visualize if output directory provided
+            if output_dir:
+                output_file = output_dir / f"{image_file.stem}_tiled{image_file.suffix}"
+                tiler.visualize_detection(str(image_file), result['detections'], str(output_file))
+        
+        print(f"\n{'='*60}")
+        print(f"Processed {len(image_files)} images")
+        print(f"Total detections: {total_detections}")
+        print(f"Average detections per image: {total_detections/len(image_files):.2f}")
+    
+    else:
+        print(f"Error: {input_path} is not a valid file or directory")
+        return
 
 
 if __name__ == '__main__':
