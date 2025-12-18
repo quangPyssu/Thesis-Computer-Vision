@@ -1,0 +1,150 @@
+TÊN MỤC: Cải tiến mô hình Recognition bằng ArcFace (ArcMargin Loss)
+
+1) Bối cảnh và vấn đề
+Hiện tại hệ thống recognition của tôi đang sử dụng mô hình đã train sẵn và lưu dưới dạng checkpoint "model_for_inference.pth".
+Checkpoint chứa các thông tin chính:
+- model_state_dict: trọng số mô hình đã train
+- brand_to_idx / idx_to_brand: ánh xạ nhãn (tổng số lớp: 2984)
+- config, test_accuracy: thông tin cấu hình và độ chính xác test
+
+Mô hình gốc đang hoạt động theo hướng "closed-set classification":
+- Đầu vào: ảnh logo/đối tượng cần nhận diện
+- Đầu ra: logits xác suất theo 2984 class (brand)
+- Loss lúc train: CrossEntropy (softmax)
+
+Vấn đề của cách train classification thuần:
+- Model tối ưu để phân lớp theo softmax, không tối ưu trực tiếp chất lượng không gian embedding.
+- Với các lớp giống nhau (logo tương tự), embedding dễ bị chồng lấn → khó phân biệt.
+- Khi số lớp lớn (2984 class), ranh giới giữa các lớp trong góc nhìn “khoảng cách” thường chưa đủ mạnh.
+- Khi cần recognition theo kiểu gần đúng / matching (cosine similarity, retrieval), mô hình classification thuần thường kém ổn định.
+
+Vì vậy tôi muốn cải tiến mô hình theo hướng metric-learning để:
+- Embedding cùng lớp tụ lại gần nhau hơn (intra-class compactness)
+- Embedding khác lớp tách xa nhau rõ hơn (inter-class separation)
+- Tăng khả năng phân biệt các logo/brand tương tự (fine-grained recognition)
+
+2) Mô hình gốc (Baseline Model)
+Dựa trên checkpoint đã kiểm tra, kiến trúc mô hình gốc gồm:
+
+2.1 Backbone (Trích đặc trưng)
+- backbone là ResNet (nhóm bottleneck: ResNet50/101/152), output đặc trưng 2048 chiều.
+- Từ state_dict, có cấu trúc key backbone.layer1..layer4 giống ResNet.
+
+2.2 Embedding layer
+- Có layer embedding.weight shape = (512, 2048)
+=> tương đương Linear(2048 → 512)
+- Đây là vector đặc trưng (embedding) kích thước 512 dùng để biểu diễn ảnh.
+
+2.3 Classifier head (Linear)
+- Có classifier.weight shape = (2984, 512)
+=> tương đương Linear(512 → 2984)
+- Đầu ra là logits cho 2984 brand.
+
+Tóm lại:
+Ảnh → ResNet backbone → feature(2048) → embedding(512) → classifier Linear → logits(2984)
+
+3) Mục tiêu cải tiến
+Mục tiêu là cải tiến mô hình recognition bằng cách thay đổi cách học phân tách lớp trong không gian embedding.
+Cụ thể:
+- Giữ nguyên backbone + embedding (tận dụng trọng số đã train).
+- Thay head classifier Linear bằng ArcFace head (ArcMarginProduct).
+- Fine-tune lại mô hình với loss mới (ArcFace logits + CrossEntropy) để embedding trở nên “discriminative” hơn.
+
+Kỳ vọng thu được:
+- Embedding 512 chiều có tính phân biệt mạnh hơn.
+- Các mẫu cùng brand sẽ cluster chặt hơn, khác brand sẽ tách rõ hơn.
+- Tăng accuracy/robustness cho các trường hợp logo gần giống nhau.
+- Ngoài classification, có thể dùng embedding để làm retrieval (cosine similarity/nearest neighbor) tốt hơn.
+
+4) ArcFace là gì và vì sao phù hợp cho Recognition
+ArcFace (Additive Angular Margin Loss) là một kỹ thuật được dùng nhiều trong bài toán face recognition và các bài toán recognition tương tự.
+
+Ý tưởng chính:
+- ArcFace chuẩn hóa embedding và trọng số lớp (L2 normalize) để so sánh theo cosine similarity (góc).
+- Với class đúng, ArcFace áp dụng biên góc (angular margin) m:
+  thay vì dùng cos(theta), dùng cos(theta + m).
+- Sau đó nhân scale s để logits có độ lớn phù hợp trước khi đưa vào CrossEntropy.
+
+Tác dụng:
+- Tăng độ “khó” khi phân loại đúng → mô hình phải học embedding phân tách rõ hơn.
+- Tạo ranh giới phân lớp theo góc trên hypersphere → ổn định và phù hợp recognition.
+- Giúp mô hình phân biệt các lớp gần nhau tốt hơn (fine-grained).
+
+5) Cách cải tiến từ mô hình gốc sang mô hình ArcFace
+Quy trình cải tiến gồm các bước sau:
+
+BƯỚC 1: Nạp checkpoint mô hình gốc
+- Load file "model_for_inference.pth" (dạng dict).
+- Lấy:
+  + sd = ckpt["model_state_dict"]
+  + brand_to_idx, idx_to_brand
+- Xác định num_classes = 2984.
+
+BƯỚC 2: Xây dựng mô hình mới (ArcFace Model) với kiến trúc tương thích
+- Giữ nguyên:
+  + backbone (ResNet, output 2048)
+  + embedding Linear(2048 → 512)
+- Thay head:
+  + bỏ classifier Linear(512 → 2984)
+  + thêm arcface head: ArcMarginProduct(512 → 2984)
+
+Mô hình mới:
+Ảnh → backbone → feature(2048) → embedding(512) → arcface head → logits(2984)
+
+BƯỚC 3: Nạp trọng số cũ vào mô hình mới
+- Load weights bằng strict=False để:
+  + backbone.* và embedding.* được nạp từ checkpoint cũ.
+  + classifier.weight/bias bị bỏ qua (vì model mới không còn classifier).
+  + arcface.weight được khởi tạo mới (vì chưa tồn tại trong checkpoint cũ).
+=> Tận dụng tối đa học được từ model cũ, chỉ thay head.
+
+BƯỚC 4: Fine-tune mô hình với ArcFace
+- Train/fine-tune trên dataset cũ (2984 class, mapping label phải khớp brand_to_idx).
+- Trong training:
+  + forward phải truyền labels vào arcface head để áp dụng margin (đây là điểm bắt buộc).
+  + logits sau arcface được đưa vào CrossEntropyLoss.
+
+Chiến lược learning rate thường dùng:
+- Backbone: lr rất nhỏ (1e-5) để giữ đặc trưng đã học, tránh phá hỏng.
+- Embedding: lr vừa (1e-4) để điều chỉnh embedding phù hợp metric.
+- ArcFace head: lr lớn hơn (1e-3) vì head mới cần học nhanh.
+
+BƯỚC 5: Lưu checkpoint mới
+- Lưu model_state_dict mới + brand_to_idx + idx_to_brand
+- Output: "model_arcface.pth"
+=> Đây là mô hình cải tiến đã fine-tune với ArcFace.
+
+6) Cách sử dụng mô hình sau cải tiến (Inference)
+Sau khi fine-tune:
+- Khi inference/classification closed-set:
+  + gọi model với labels=None (không áp margin).
+  + lấy pred = argmax(logits).
+
+- Khi recognition open-set / matching / retrieval:
+  + lấy embedding 512 chiều (đầu ra emb).
+  + normalize L2 embedding.
+  + so khớp bằng cosine similarity hoặc nearest neighbor.
+=> ArcFace giúp embedding “đẹp” hơn cho retrieval.
+
+7) Kết quả mong đợi và tiêu chí đánh giá
+Sau cải tiến, mong đợi các cải thiện sau:
+
+7.1 Về embedding space
+- Embedding cùng brand tụ lại chặt hơn.
+- Embedding khác brand tách xa hơn theo góc.
+
+7.2 Về hiệu năng nhận diện
+- Tăng accuracy tổng thể hoặc ít nhất tăng mạnh ở nhóm class khó (logo tương tự).
+- Tăng Top-5 accuracy nếu có nhiều class gần nhau.
+
+7.3 Về khả năng nhận diện theo similarity
+- Khi dùng cosine similarity/nearest neighbor, tỷ lệ matching đúng tăng.
+- Giảm nhầm lẫn ở các brand có thiết kế gần giống.
+
+8) Tóm tắt
+Tóm lại, cải tiến được thực hiện bằng cách:
+- Xuất phát từ mô hình classification baseline: ResNet backbone + embedding(512) + classifier Linear.
+- Thay classifier Linear bằng ArcFace head (ArcMarginProduct).
+- Nạp lại backbone và embedding từ checkpoint cũ, bỏ weights classifier cũ.
+- Fine-tune lại mô hình với ArcFace để học embedding có tính phân biệt mạnh hơn.
+- Kết quả thu được là mô hình mới (model_arcface.pth) có embedding tốt hơn cho recognition, đặc biệt với bài toán nhiều class và các lớp tương tự nhau.
