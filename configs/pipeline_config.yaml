@@ -6,6 +6,11 @@ detection:
   conf_threshold: 0.25
   iou_threshold: 0.45
   
+  # Tiling inference (Contribution #2)
+  use_tiling: false  # Set to true to enable tiled inference
+  tile_size: 1024
+  tile_overlap: 0.2  # 20% overlap
+  
 # Recognition (ResNet50)
 recognition:
   model_path: recognition/weights/model_for_inference.pth

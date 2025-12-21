@@ -38,6 +38,14 @@ def main():
     parser.add_argument('--no-show', action='store_true',
                         help='Do not display results')
     
+    # Tiling parameters (Contribution #2)
+    parser.add_argument('--use-tiling', action='store_true',
+                        help='Enable tiled inference for small logos (Contribution #2)')
+    parser.add_argument('--tile-size', type=int, default=1024,
+                        help='Tile size for tiled inference')
+    parser.add_argument('--tile-overlap', type=float, default=0.2,
+                        help='Tile overlap ratio (0-1)')
+    
     args = parser.parse_args()
     
     # Initialize pipeline
@@ -49,7 +57,10 @@ def main():
         pipeline = LogoDetectionRecognitionPipeline(
             yolo_model_path=args.yolo_model,
             resnet_model_path=args.resnet_model,
-            device=args.device
+            device=args.device,
+            use_tiling=args.use_tiling,
+            tile_size=args.tile_size,
+            tile_overlap=args.tile_overlap
         )
     except FileNotFoundError as e:
         print(f"\n❌ Error: {e}")

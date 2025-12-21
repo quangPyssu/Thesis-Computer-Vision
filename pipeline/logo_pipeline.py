@@ -30,6 +30,7 @@ import sys
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
 from recognition.model import LogoRecognitionModel
+from detection.inference_tiled import TiledInference
 
 
 class LogoDetectionRecognitionPipeline:
@@ -44,7 +45,10 @@ class LogoDetectionRecognitionPipeline:
         yolo_model_path='detection/runs/detect/logodet3k_yolov8s_baseline50/weights/best.pt',
         resnet_model_path='recognition/weights/model_for_inference.pth',
         device='cuda',
-        brand_mapping_path='LogoDet-3K/annotations.json'
+        brand_mapping_path='LogoDet-3K/annotations.json',
+        use_tiling=False,
+        tile_size=1024,
+        tile_overlap=0.2
     ):
         """
         Initialize the pipeline with trained models.
@@ -53,8 +57,14 @@ class LogoDetectionRecognitionPipeline:
             yolo_model_path: Path to YOLOv8 detection weights
             resnet_model_path: Path to ResNet50 classification checkpoint
             device: 'cuda' or 'cpu'
+            use_tiling: Enable tiling inference (Contribution #2)
+            tile_size: Size of tiles for tiled inference
+            tile_overlap: Overlap ratio between tiles (0-1)
         """
         self.device = torch.device(device if torch.cuda.is_available() else 'cpu')
+        self.use_tiling = use_tiling
+        self.tile_size = tile_size
+        self.tile_overlap = tile_overlap
         
         print("="*70)
         print("🚀 INITIALIZING LOGO DETECTION + RECOGNITION PIPELINE")
@@ -62,7 +72,18 @@ class LogoDetectionRecognitionPipeline:
         
         # Load YOLOv8 Detection Model
         print("\n📦 Loading YOLOv8 detection model...")
-        self.yolo_model = YOLO(yolo_model_path)
+        if self.use_tiling:
+            print(f"  🔲 Tiling enabled: tile_size={self.tile_size}, overlap={self.tile_overlap}")
+            self.tiled_detector = TiledInference(
+                model_path=yolo_model_path,
+                tile_size=self.tile_size,
+                overlap=self.tile_overlap
+            )
+            # Also store reference to underlying YOLO model
+            self.yolo_model = self.tiled_detector.model
+        else:
+            self.yolo_model = YOLO(yolo_model_path)
+            self.tiled_detector = None
         print(f"✓ YOLOv8 loaded from: {yolo_model_path}")
         
         # Load ResNet50 Classification Model
@@ -120,19 +141,46 @@ class LogoDetectionRecognitionPipeline:
         
         # Step 1: Run YOLO Detection
         print(f"🔍 Running YOLO detection on: {Path(image_path).name}")
-        yolo_results = self.yolo_model(image_path, conf=conf_threshold, verbose=False)[0]
         
-        boxes = yolo_results.boxes
-        print(f"✓ Found {len(boxes)} logo detections")
+        if self.use_tiling:
+            # Use tiled inference (Contribution #2)
+            tiled_result = self.tiled_detector.predict_tiled(image_path, verbose=True)
+            detections_array = tiled_result['detections']  # Shape: (N, 6) - [x1, y1, x2, y2, conf, class]
+            
+            # Convert to list format for processing
+            boxes_list = []
+            for det in detections_array:
+                x1, y1, x2, y2, conf, cls = det
+                boxes_list.append({
+                    'xyxy': [int(x1), int(y1), int(x2), int(y2)],
+                    'conf': float(conf),
+                    'cls': int(cls)
+                })
+            
+            print(f"✓ Found {len(boxes_list)} logo detections (tiled: {tiled_result['n_tiles']} tiles, "
+                  f"{tiled_result['n_detections_before_nms']} → {tiled_result['n_detections_after_nms']} after NMS)")
+        else:
+            # Use single-pass inference
+            yolo_results = self.yolo_model(image_path, conf=conf_threshold, verbose=False)[0]
+            boxes = yolo_results.boxes
+            boxes_list = []
+            for box in boxes:
+                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy().astype(int)
+                boxes_list.append({
+                    'xyxy': [int(x1), int(y1), int(x2), int(y2)],
+                    'conf': float(box.conf[0].item()),
+                    'cls': int(box.cls[0].item())
+                })
+            print(f"✓ Found {len(boxes_list)} logo detections")
         
         # Step 2: Classify each detected logo
         results = []
         
         with torch.no_grad():
-            for i, box in enumerate(boxes):
+            for i, box_dict in enumerate(boxes_list):
                 # Get bounding box coordinates
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy().astype(int)
-                conf = box.conf[0].item()
+                x1, y1, x2, y2 = box_dict['xyxy']
+                conf = box_dict['conf']
                 
                 # Crop logo region
                 logo_crop = image_rgb[y1:y2, x1:x2]
